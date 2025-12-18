@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import ServiceLogo from './components/ServiceLogo';
 import SnowParticles from './components/SnowParticles';
+import Terms from './components/Terms';
+import Privacy from './components/Privacy';
+import PlaylistPreviewPage from './components/PlaylistPreviewPage';
 import { parsePlaylistUrl } from './utils/urlParser';
 import { convertPlaylist, ConversionProgress } from './utils/playlistConverter';
+import { TrackPreview } from './types/playlist';
 
 interface MusicService {
   id: string;
@@ -28,6 +32,7 @@ function App() {
   const [conversionResult, setConversionResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [snowEnabled, setSnowEnabled] = useState(true);
+  const [currentView, setCurrentView] = useState<'home' | 'terms' | 'privacy' | 'preview' | 'creating'>('home');
 
   useEffect(() => {
     if (!sourceUrl) {
@@ -50,6 +55,14 @@ function App() {
   const handleConversion = async () => {
     if (!detectedService || !targetService) return;
     
+    // Redirect to preview page instead of immediate conversion
+    setCurrentView('preview');
+  };
+
+  const handlePreviewProceed = async (checkedTracks: TrackPreview[]) => {
+    if (!detectedService || !targetService) return;
+    
+    setCurrentView('creating');
     setIsConverting(true);
     setConversionProgress(null);
     setConversionResult(null);
@@ -63,17 +76,118 @@ function App() {
       );
       
       setConversionResult(result);
+      setCurrentView('home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Conversion failed');
+      setCurrentView('home');
     } finally {
       setIsConverting(false);
       setConversionProgress(null);
     }
   };
 
+  const handleBackToHome = () => {
+    setCurrentView('home');
+    setConversionResult(null);
+    setError(null);
+  };
+
   const availableTargets = musicServices.filter(service => 
     service.id !== detectedService?.id
   );
+
+  // Render different views based on current state
+  if (currentView === 'preview') {
+    return (
+      <>
+        <SnowParticles enabled={snowEnabled} />
+        <PlaylistPreviewPage
+          playlistUrl={sourceUrl}
+          sourceService={detectedService?.id || ''}
+          targetService={targetService?.id || ''}
+          onBack={handleBackToHome}
+          onProceed={handlePreviewProceed}
+        />
+      </>
+    );
+  }
+
+  if (currentView === 'creating') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 text-white">
+        <SnowParticles enabled={snowEnabled} />
+        <div className="container mx-auto px-6 py-12 flex items-center justify-center min-h-screen">
+          <div className="text-center max-w-2xl">
+            <div className="mb-8">
+              <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <h2 className="text-2xl font-bold mb-2">Creating Your Playlist</h2>
+              <p className="text-gray-400">Please wait while we build your playlist...</p>
+            </div>
+            
+            {conversionProgress && (
+              <div className="bg-white/[0.02] backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold capitalize">{conversionProgress.stage}</h3>
+                    <span className="text-sm text-gray-400">{Math.round(conversionProgress.progress)}%</span>
+                  </div>
+                  
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${conversionProgress.progress}%` }}
+                    ></div>
+                  </div>
+                  
+                  <p className="text-gray-300">{conversionProgress.message}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === 'terms') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 text-white">
+        <SnowParticles enabled={snowEnabled} />
+        <div className="container mx-auto px-6 py-12">
+          <div className="mb-8">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <span>←</span>
+              <span>Back to SoundRelay</span>
+            </button>
+          </div>
+          <Terms />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === 'privacy') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 text-white">
+        <SnowParticles enabled={snowEnabled} />
+        <div className="container mx-auto px-6 py-12">
+          <div className="mb-8">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <span>←</span>
+              <span>Back to SoundRelay</span>
+            </button>
+          </div>
+          <Privacy />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 text-white">
@@ -217,7 +331,7 @@ function App() {
                       : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 cursor-pointer shadow-xl hover:shadow-purple-500/25'
                   }`}
                 >
-                  {isConverting ? 'Converting...' : 'Convert Playlist'}
+                  {isConverting ? 'Converting...' : 'Preview & Convert'}
                 </button>
               </div>
             </section>
@@ -329,8 +443,18 @@ function App() {
 
         <footer className="text-center pt-16 pb-8 border-t border-white/10">
           <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500 mb-6">
-            <a href="#" className="hover:text-gray-300 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
+            <button 
+              onClick={() => setCurrentView('privacy')}
+              className="hover:text-gray-300 transition-colors cursor-pointer"
+            >
+              Privacy
+            </button>
+            <button 
+              onClick={() => setCurrentView('terms')}
+              className="hover:text-gray-300 transition-colors cursor-pointer"
+            >
+              Terms
+            </button>
             <a href="#" className="hover:text-gray-300 transition-colors">Supported Services</a>
             <a href="#" className="hover:text-gray-300 transition-colors">API Documentation</a>
           </div>
