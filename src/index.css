@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background: linear-gradient(to bottom, #0f172a, #111827, #0f172a);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Custom animations */
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.slide-in-from-bottom-2 {
+  animation: slideInFromBottom 0.5s ease-out;
+}
+
+.slide-in-from-bottom-4 {
+  animation: slideInFromBottom 0.7s ease-out;
+}
+
+.slide-in-from-bottom-6 {
+  animation: slideInFromBottom 0.9s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Focus and selection */
+input:focus {
+  outline: none;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+}
