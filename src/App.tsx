@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ServiceLogo from './components/ServiceLogo';
+import SnowParticles from './components/SnowParticles';
 import { parsePlaylistUrl } from './utils/urlParser';
 import { convertPlaylist, ConversionProgress } from './utils/playlistConverter';
 
@@ -26,6 +27,7 @@ function App() {
   const [conversionProgress, setConversionProgress] = useState<ConversionProgress | null>(null);
   const [conversionResult, setConversionResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [snowEnabled, setSnowEnabled] = useState(true);
 
   useEffect(() => {
     if (!sourceUrl) {
@@ -75,6 +77,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950 text-white">
+      <SnowParticles enabled={snowEnabled} />
       <div className="container mx-auto px-6 py-12">
         
         <header className="text-center mb-20">
@@ -330,6 +333,19 @@ function App() {
             <a href="#" className="hover:text-gray-300 transition-colors">Terms</a>
             <a href="#" className="hover:text-gray-300 transition-colors">Supported Services</a>
             <a href="#" className="hover:text-gray-300 transition-colors">API Documentation</a>
+          </div>
+          
+          {/* Snow Toggle */}
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={() => setSnowEnabled(!snowEnabled)}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg transition-all duration-300 text-sm"
+            >
+              <span className="text-lg">{snowEnabled ? '❄️' : '🌟'}</span>
+              <span className="text-gray-300">
+                {snowEnabled ? 'Disable Snow' : 'Enable Snow'}
+              </span>
+            </button>
           </div>
           
           <p className="text-xs text-gray-600">
